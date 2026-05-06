@@ -1,0 +1,60 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ── Base ── */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  color-scheme: dark;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  background-color: #030712; /* gray-950 */
+  color: #f3f4f6;            /* gray-100 */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+}
+
+/* ── RPG Tier Colors ── */
+:root {
+  --tier-bronze:   #CD7F32;
+  --tier-silver:   #C0C0C0;
+  --tier-gold:     #FFD700;
+  --tier-platinum: #E5E4E2;
+  --tier-diamond:  #B9F2FF;
+
+  --rarity-common:    #9CA3AF;
+  --rarity-rare:      #3B82F6;
+  --rarity-epic:      #8B5CF6;
+  --rarity-legendary: #F59E0B;
+
+  --branch-analysis:   #60A5FA; /* blue-400  */
+  --branch-risk:       #F87171; /* red-400   */
+  --branch-psychology: #C084FC; /* purple-400*/
+  --branch-execution:  #34D399; /* emerald-400*/
+
+  --sidebar-width: 240px;
+  --sidebar-collapsed: 64px;
+  --topbar-height: 56px;
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #111827; }
+::-webkit-scrollbar-thumb { background: #374151; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #4B5563; }
+
+/* ── Mono for prices ── */
+.font-prices {
+  font-family: ui-monospace, 'Cascadia Code', Consolas, monospace;
+}
