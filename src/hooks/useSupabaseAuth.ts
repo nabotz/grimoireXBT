@@ -7,7 +7,7 @@ interface AuthState {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  login: (email: string) => Promise<{ error: string | null }>;
+  loginWithCode: (code: string) => Promise<{ error: string | null }>;
   logout: () => Promise<void>;
 }
 
@@ -35,10 +35,10 @@ export function useSupabaseAuth(): AuthState {
     return () => subscription.unsubscribe();
   }, []);
 
-  const login = async (email: string): Promise<{ error: string | null }> => {
-    const { error } = await supabase.auth.signInWithOtp({
-      email,
-      options: { emailRedirectTo: window.location.origin },
+  const loginWithCode = async (code: string): Promise<{ error: string | null }> => {
+    const { error } = await supabase.auth.signInWithPassword({
+      email: 'admin@grimoire.local',
+      password: code,
     });
     return { error: error?.message ?? null };
   };
@@ -48,5 +48,5 @@ export function useSupabaseAuth(): AuthState {
     navigate('/login');
   };
 
-  return { user, session, loading, login, logout };
+  return { user, session, loading, loginWithCode, logout };
 }

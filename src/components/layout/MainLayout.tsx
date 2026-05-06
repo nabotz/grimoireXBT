@@ -2,7 +2,7 @@ import { Outlet, NavLink, Navigate } from 'react-router-dom';
 import {
   LayoutDashboard, ListOrdered, PlusCircle, BarChart3,
   User, Binary, Trophy, BookOpen, Settings, ChevronLeft,
-  ChevronRight, Swords, LogOut,
+  ChevronRight, Swords, LogOut, ShieldX,
 } from 'lucide-react';
 import { useState } from 'react';
 import { useSupabaseAuth } from '../../hooks/useSupabaseAuth';
@@ -47,6 +47,30 @@ export default function MainLayout() {
   }
 
   if (!user) return <Navigate to="/login" replace />;
+
+  // Email allowlist guard
+  const allowedEmail = import.meta.env.VITE_ALLOWED_EMAIL as string | undefined;
+  if (allowedEmail && user.email !== allowedEmail) {
+    return (
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
+        <div className="text-center space-y-4">
+          <div className="p-4 rounded-full bg-red-500/10 inline-flex">
+            <ShieldX size={32} className="text-red-400" />
+          </div>
+          <div>
+            <h1 className="text-lg font-semibold text-gray-100">Access Denied</h1>
+            <p className="text-sm text-gray-500 mt-1">This journal is private.</p>
+          </div>
+          <button
+            onClick={logout}
+            className="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition-colors"
+          >
+            Sign out
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const xpProgress = profile ? getXPProgress(profile.total_xp) : null;
   const levelInfo  = profile ? getLevelInfo(profile.total_xp) : null;
