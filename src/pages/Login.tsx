@@ -1,8 +1,10 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Swords, Loader2, KeyRound } from 'lucide-react';
 import { useSupabaseAuth } from '../hooks/useSupabaseAuth';
 
 export default function Login() {
+  const navigate = useNavigate();
   const { loginWithCode } = useSupabaseAuth();
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
@@ -15,10 +17,10 @@ export default function Login() {
     const { error: err } = await loginWithCode(code);
     setLoading(false);
     if (err) { 
-      setError('Invalid passcode'); 
+      setError(err); 
       return; 
     }
-    // No need for a "sent" state; successful login will redirect automatically via MainLayout/App router
+    navigate('/');
   };
 
   return (
