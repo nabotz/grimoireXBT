@@ -72,15 +72,6 @@ export default function TradeLog() {
           <option value="cancelled">Cancelled</option>
         </select>
 
-        {/* Asset type */}
-        <select value={filters.asset_type} onChange={e => setFilter('asset_type', e.target.value as any)}
-          className="bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-sm text-gray-300 focus:outline-none focus:ring-1 focus:ring-purple-500">
-          <option value="all">All types</option>
-          <option value="perp">Perp</option>
-          <option value="spot">Spot</option>
-          <option value="defi">DeFi</option>
-        </select>
-
         {hasFilters && (
           <button onClick={resetFilters} className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-300 transition-colors">
             <X size={12} /> Clear

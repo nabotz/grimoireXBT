@@ -15,14 +15,13 @@ CREATE TABLE trades (
   -- Trade data
   pair          TEXT NOT NULL,
   side          TEXT NOT NULL CHECK (side IN ('long', 'short')),
-  asset_type    TEXT NOT NULL CHECK (asset_type IN ('perp', 'spot', 'defi')),
+  asset_type    TEXT NOT NULL DEFAULT 'spot' CHECK (asset_type IN ('spot')),
   exchange      TEXT,
 
   -- Prices & sizing
   entry_price   NUMERIC NOT NULL,
   exit_price    NUMERIC,
   position_size NUMERIC NOT NULL,
-  leverage      NUMERIC DEFAULT 1,
 
   -- Results
   pnl           NUMERIC,

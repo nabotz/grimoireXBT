@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Swords, Loader2, KeyRound } from 'lucide-react';
+import { Loader2, KeyRound } from 'lucide-react';
 import { useSupabaseAuth } from '../hooks/useSupabaseAuth';
 
 export default function Login() {
@@ -26,17 +26,6 @@ export default function Login() {
   return (
     <div className="min-h-screen bg-gray-950 flex items-center justify-center p-4">
       <div className="w-full max-w-sm space-y-8">
-
-        {/* Brand */}
-        <div className="flex flex-col items-center space-y-3">
-          <div className="p-3 rounded-xl bg-purple-600/20 border border-purple-500/30">
-            <Swords size={28} className="text-purple-400" />
-          </div>
-          <div className="text-center">
-            <h1 className="text-xl font-semibold text-gray-100">GrimoireXBT</h1>
-            <p className="text-sm text-gray-500">Your gamified trading journal</p>
-          </div>
-        </div>
 
         {/* Card */}
         <div className="bg-gray-900 border border-gray-800 rounded-2xl p-6 space-y-5">

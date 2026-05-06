@@ -10,12 +10,10 @@ import type { EmotionTag } from '../../types/emotion';
 const schema = z.object({
   pair: z.string().min(1, 'Pair required'),
   side: z.enum(['long', 'short']),
-  asset_type: z.enum(['perp', 'spot', 'defi']),
   exchange: z.string().optional(),
   entry_price: z.coerce.number({ invalid_type_error: 'Enter a price' }).positive('Must be positive'),
   exit_price: z.coerce.number().positive().optional().or(z.literal('')),
   position_size: z.coerce.number({ invalid_type_error: 'Required' }).positive('Must be positive'),
-  leverage: z.coerce.number().min(1).default(1),
   pnl: z.coerce.number().optional().or(z.literal('')),
   planned_rr: z.coerce.number().positive().optional().or(z.literal('')),
   risk_reward: z.coerce.number().positive().optional().or(z.literal('')),
@@ -46,20 +44,20 @@ export default function TradeForm({ defaultValues, existingEmotions = [], onSubm
 
   const { register, handleSubmit, control, setValue, formState: { errors } } = useForm<TradeFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { side: 'long', asset_type: 'perp', leverage: 1, status: 'closed', ...defaultValues },
+    defaultValues: { side: 'long', status: 'closed', ...defaultValues },
   });
 
   const watched = useWatch({ control });
 
-  // Auto-calc PnL when entry/exit/size/side/leverage change
+  // Auto-calc PnL when entry/exit/size/side change
   useEffect(() => {
-    const { entry_price, exit_price, position_size, side, leverage } = watched;
+    const { entry_price, exit_price, position_size, side } = watched;
     if (entry_price && exit_price && position_size) {
       const dir = side === 'long' ? 1 : -1;
-      const pnl = (Number(exit_price) - Number(entry_price)) * Number(position_size) * dir * Number(leverage || 1);
+      const pnl = (Number(exit_price) - Number(entry_price)) * Number(position_size) * dir;
       setValue('pnl', Math.round(pnl * 100) / 100);
     }
-  }, [watched.entry_price, watched.exit_price, watched.position_size, watched.side, watched.leverage, setValue]);
+  }, [watched.entry_price, watched.exit_price, watched.position_size, watched.side, setValue]);
 
   // XP preview
   useEffect(() => {
@@ -97,12 +95,12 @@ export default function TradeForm({ defaultValues, existingEmotions = [], onSubm
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className={labelClass}>Pair *</label>
-            <input {...register('pair')} placeholder="ETH-PERP" className={inputClass} />
+            <input {...register('pair')} placeholder="BTC/USDT" className={inputClass} />
             {errors.pair && <p className="mt-1 text-xs text-red-400">{errors.pair.message}</p>}
           </div>
           <div>
             <label className={labelClass}>Exchange</label>
-            <input {...register('exchange')} placeholder="Hyperliquid" className={inputClass} />
+            <input {...register('exchange')} placeholder="Binance" className={inputClass} />
           </div>
         </div>
 
@@ -125,25 +123,9 @@ export default function TradeForm({ defaultValues, existingEmotions = [], onSubm
           )} />
         </div>
 
-        {/* Asset type */}
-        <div>
-          <label className={labelClass}>Asset Type</label>
-          <Controller control={control} name="asset_type" render={({ field }) => (
-            <div className="flex gap-2">
-              {(['perp', 'spot', 'defi'] as const).map(t => (
-                <button type="button" key={t} onClick={() => field.onChange(t)}
-                  className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-colors border capitalize ${
-                    field.value === t ? 'bg-purple-600/20 text-purple-400 border-purple-500/50' : 'bg-gray-800 text-gray-500 border-gray-700 hover:border-gray-600'
-                  }`}>
-                  {t}
-                </button>
-              ))}
-            </div>
-          )} />
-        </div>
       </div>
 
-      {/* ── Prices & Size ── */}
+      {/* ── Prices & Size ── */}}
       <div className={sectionClass}>
         <h3 className="text-sm font-medium text-gray-300">Prices & Size</h3>
         <div className="grid grid-cols-2 gap-4">
@@ -157,13 +139,9 @@ export default function TradeForm({ defaultValues, existingEmotions = [], onSubm
             <input {...register('exit_price')} type="number" step="any" placeholder="0.00" className={`${inputClass} font-mono`} />
           </div>
           <div>
-            <label className={labelClass}>Position Size *</label>
+            <label className={labelClass}>Position Size (in quote, e.g. USDT) *</label>
             <input {...register('position_size')} type="number" step="any" placeholder="0" className={`${inputClass} font-mono`} />
             {errors.position_size && <p className="mt-1 text-xs text-red-400">{errors.position_size.message}</p>}
-          </div>
-          <div>
-            <label className={labelClass}>Leverage</label>
-            <input {...register('leverage')} type="number" min="1" step="0.1" placeholder="1" className={`${inputClass} font-mono`} />
           </div>
         </div>
       </div>

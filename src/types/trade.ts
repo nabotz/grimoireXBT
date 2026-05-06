@@ -1,5 +1,4 @@
 export type TradeSide = 'long' | 'short';
-export type AssetType = 'perp' | 'spot' | 'defi';
 export type TradeStatus = 'open' | 'closed' | 'cancelled';
 
 export interface Trade {
@@ -16,7 +15,6 @@ export interface Trade {
   entry_price: number;
   exit_price?: number;
   position_size: number;
-  leverage: number;
 
   // Results
   pnl?: number;
@@ -51,7 +49,6 @@ export interface TradeInput {
   entry_price: number;
   exit_price?: number;
   position_size: number;
-  leverage?: number;
   pnl?: number;
   planned_rr?: number;
   setup_type?: string;
