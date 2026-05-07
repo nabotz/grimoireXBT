@@ -1,11 +1,12 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Pencil, Trash2, Star } from 'lucide-react';
+import { ArrowLeft, Pencil, Trash2, Zap, TrendingUp, TrendingDown, Shield, BookOpen, Target, Star } from 'lucide-react';
 import { useState } from 'react';
 import { useTrade, useEmotionTags, useUpdateTrade, useDeleteTrade } from '../hooks/useTrades';
 import { useUIStore } from '../store/uiStore';
 import Badge from '../components/shared/Badge';
 import TradeForm, { type TradeFormValues } from '../components/trade/TradeForm';
 import { formatCurrency, formatDate, formatPercent, pnlColor } from '../lib/formatters';
+import { calculateTradeXP } from '../engine/xpCalculator';
 
 export default function TradeDetail() {
   const { id } = useParams<{ id: string }>();
@@ -148,6 +149,65 @@ export default function TradeDetail() {
           <p className="text-sm text-gray-400 leading-relaxed whitespace-pre-wrap">{trade.notes}</p>
         </div>
       )}
+      {/* XP Breakdown — only for closed trades */}
+      {trade.status === 'closed' && (() => {
+        const xp = calculateTradeXP(trade, emotions);
+        const BONUS_ICONS: Record<string, React.ReactNode> = {
+          win:           <TrendingUp size={12} />,
+          loss:          <TrendingDown size={12} />,
+          rr_excellent:  <Star size={12} />,
+          rr_good:       <Star size={12} />,
+          rr_ok:         <Star size={12} />,
+          plan_followed: <Target size={12} />,
+          zen_trade:     <Shield size={12} />,
+          journaled:     <BookOpen size={12} />,
+          setup_defined: <Target size={12} />,
+        };
+        return (
+          <div className="bg-gray-900/50 rounded-xl border border-purple-500/20 p-4 space-y-3">
+            <div className="flex items-center gap-2">
+              <Zap size={15} className="text-purple-400" />
+              <h2 className="text-sm font-medium text-gray-300">XP Breakdown</h2>
+            </div>
+
+            <div className="space-y-1.5">
+              {/* Base XP */}
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-gray-500">Base XP</span>
+                <span className="font-mono text-gray-400">+{xp.baseXP}</span>
+              </div>
+
+              {/* Bonuses */}
+              {xp.bonuses.map((b, i) => (
+                <div key={i} className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1.5 text-emerald-400">
+                    {BONUS_ICONS[b.type] ?? <Zap size={12} />}
+                    <span>{b.reason}</span>
+                  </div>
+                  <span className="font-mono text-emerald-400">+{b.amount}</span>
+                </div>
+              ))}
+
+              {/* Penalties */}
+              {xp.penalties.map((p, i) => (
+                <div key={i} className="flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-1.5 text-red-400">
+                    <TrendingDown size={12} />
+                    <span>{p.reason}</span>
+                  </div>
+                  <span className="font-mono text-red-400">{p.amount}</span>
+                </div>
+              ))}
+
+              {/* Divider + Total */}
+              <div className="border-t border-gray-800 pt-2 flex items-center justify-between">
+                <span className="text-xs font-medium text-gray-400">Total XP Earned</span>
+                <span className="text-base font-bold font-mono text-purple-400">+{xp.totalXP} XP</span>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 }
