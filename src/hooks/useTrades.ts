@@ -6,7 +6,7 @@ import type { EmotionTag } from '../types/emotion';
 // ── Fetch trades list ────────────────────────────────────────────────────────
 
 export function useTradesList(filters?: {
-  side?: string; status?: string; asset_type?: string;
+  status?: string;
   dateFrom?: string; dateTo?: string; search?: string;
 }) {
   return useQuery({
@@ -18,12 +18,10 @@ export function useTradesList(filters?: {
         .order('entry_date', { ascending: false })
         .limit(200);
 
-      if (filters?.side && filters.side !== 'all') q = q.eq('side', filters.side);
       if (filters?.status && filters.status !== 'all') q = q.eq('status', filters.status);
-      if (filters?.asset_type && filters.asset_type !== 'all') q = q.eq('asset_type', filters.asset_type);
       if (filters?.dateFrom) q = q.gte('entry_date', filters.dateFrom);
       if (filters?.dateTo) q = q.lte('entry_date', filters.dateTo);
-      if (filters?.search) q = q.ilike('pair', `%${filters.search}%`);
+      if (filters?.search) q = q.ilike('token', `%${filters.search}%`);
 
       const { data, error } = await q;
       if (error) throw error;

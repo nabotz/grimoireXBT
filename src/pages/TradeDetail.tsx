@@ -76,7 +76,7 @@ export default function TradeDetail() {
             <ArrowLeft size={18} />
           </button>
           <div>
-            <h1 className="text-xl font-semibold text-gray-100 font-mono">{trade.pair}</h1>
+            <h1 className="text-xl font-semibold text-gray-100 font-mono">{trade.token}</h1>
             <p className="text-xs text-gray-500">{formatDate(trade.entry_date)}</p>
           </div>
         </div>
@@ -110,14 +110,12 @@ export default function TradeDetail() {
         <h2 className="text-sm font-medium text-gray-300">Details</h2>
         <div className="grid grid-cols-2 gap-x-8 gap-y-2 text-sm">
           {[
-            { label: 'Side',  value: <Badge variant={trade.side === 'long' ? 'success' : 'danger'} size="sm">{trade.side}</Badge> },
             { label: 'Status', value: <Badge variant="neutral" size="sm" className="capitalize">{trade.status}</Badge> },
-            { label: 'Asset Type', value: <span className="text-gray-300 capitalize">{trade.asset_type}</span> },
-            { label: 'Exchange', value: <span className="text-gray-300">{trade.exchange ?? '—'}</span> },
+            { label: 'Network', value: <span className="text-gray-300 capitalize">{trade.network ?? '—'}</span> },
+            { label: 'Category', value: <span className="text-gray-300">{trade.category ?? '—'}</span> },
             { label: 'Entry', value: <span className="text-gray-300 font-mono">{trade.entry_price}</span> },
             { label: 'Exit', value: <span className="text-gray-300 font-mono">{trade.exit_price ?? '—'}</span> },
             { label: 'Size', value: <span className="text-gray-300 font-mono">{trade.position_size}</span> },
-            { label: 'Leverage', value: <span className="text-gray-300 font-mono">{trade.leverage}x</span> },
             { label: 'Setup', value: <span className="text-gray-300">{trade.setup_type ?? '—'}</span> },
             { label: 'XP Earned', value: <span className="text-purple-400 font-medium">+{trade.xp_earned} XP</span> },
           ].map(({ label, value }) => (

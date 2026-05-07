@@ -8,9 +8,9 @@ import type { Trade } from '../../types/trade';
 import type { EmotionTag } from '../../types/emotion';
 
 const schema = z.object({
-  pair: z.string().min(1, 'Pair required'),
-  side: z.enum(['long', 'short']),
-  exchange: z.string().optional(),
+  token: z.string().min(1, 'Token required'),
+  network: z.string().optional(),
+  category: z.string().optional(),
   entry_price: z.coerce.number({ invalid_type_error: 'Enter a price' }).positive('Must be positive'),
   exit_price: z.coerce.number().positive().optional().or(z.literal('')),
   position_size: z.coerce.number({ invalid_type_error: 'Required' }).positive('Must be positive'),
@@ -44,20 +44,19 @@ export default function TradeForm({ defaultValues, existingEmotions = [], onSubm
 
   const { register, handleSubmit, control, setValue, formState: { errors } } = useForm<TradeFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: { side: 'long', status: 'closed', ...defaultValues },
+    defaultValues: { status: 'closed', ...defaultValues },
   });
 
   const watched = useWatch({ control });
 
-  // Auto-calc PnL when entry/exit/size/side change
+  // Auto-calc PnL when entry/exit/size change
   useEffect(() => {
-    const { entry_price, exit_price, position_size, side } = watched;
+    const { entry_price, exit_price, position_size } = watched;
     if (entry_price && exit_price && position_size) {
-      const dir = side === 'long' ? 1 : -1;
-      const pnl = (Number(exit_price) - Number(entry_price)) * Number(position_size) * dir;
+      const pnl = (Number(exit_price) - Number(entry_price)) * Number(position_size);
       setValue('pnl', Math.round(pnl * 100) / 100);
     }
-  }, [watched.entry_price, watched.exit_price, watched.position_size, watched.side, setValue]);
+  }, [watched.entry_price, watched.exit_price, watched.position_size, setValue]);
 
   // XP preview
   useEffect(() => {
@@ -83,7 +82,7 @@ export default function TradeForm({ defaultValues, existingEmotions = [], onSubm
     await onSubmit(data, emotions);
   });
 
-  const sideValue = useWatch({ control, name: 'side' });
+
   const statusValue = useWatch({ control, name: 'status' });
 
   return (
@@ -94,38 +93,48 @@ export default function TradeForm({ defaultValues, existingEmotions = [], onSubm
         <h3 className="text-sm font-medium text-gray-300">Trade Info</h3>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={labelClass}>Pair *</label>
-            <input {...register('pair')} placeholder="BTC/USDT" className={inputClass} />
-            {errors.pair && <p className="mt-1 text-xs text-red-400">{errors.pair.message}</p>}
+            <label className={labelClass}>Token *</label>
+            <input {...register('token')} placeholder="Token name" className={inputClass} />
+            {errors.token && <p className="mt-1 text-xs text-red-400">{errors.token.message}</p>}
           </div>
           <div>
-            <label className={labelClass}>Exchange</label>
-            <input {...register('exchange')} placeholder="Binance" className={inputClass} />
+            <label className={labelClass}>Network</label>
+            <Controller control={control} name="network" render={({ field }) => {
+              const isOther = field.value && !['solana', 'ethereum', 'base', ''].includes(field.value.toLowerCase());
+              return (
+                <div className="flex gap-2">
+                  <select 
+                    value={isOther ? 'other' : field.value || ''} 
+                    onChange={e => field.onChange(e.target.value === 'other' ? '' : e.target.value)}
+                    className={inputClass}
+                  >
+                    <option value="">Select network</option>
+                    <option value="solana">Solana</option>
+                    <option value="ethereum">Ethereum</option>
+                    <option value="base">Base</option>
+                    <option value="other">Other</option>
+                  </select>
+                  {isOther && (
+                    <input 
+                      value={field.value} 
+                      onChange={e => field.onChange(e.target.value)} 
+                      placeholder="Custom network" 
+                      className={inputClass} 
+                    />
+                  )}
+                </div>
+              );
+            }} />
           </div>
         </div>
 
-        {/* Side toggle */}
         <div>
-          <label className={labelClass}>Side</label>
-          <Controller control={control} name="side" render={({ field }) => (
-            <div className="flex gap-2">
-              {(['long', 'short'] as const).map(s => (
-                <button type="button" key={s} onClick={() => field.onChange(s)}
-                  className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors border ${
-                    field.value === s
-                      ? s === 'long' ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50' : 'bg-red-500/20 text-red-400 border-red-500/50'
-                      : 'bg-gray-800 text-gray-500 border-gray-700 hover:border-gray-600'
-                  }`}>
-                  {s === 'long' ? '↑ Long' : '↓ Short'}
-                </button>
-              ))}
-            </div>
-          )} />
+          <label className={labelClass}>Category</label>
+          <input {...register('category')} placeholder="e.g. Memecoin, Utility" className={inputClass} />
         </div>
-
       </div>
 
-      {/* ── Prices & Size ── */}}
+      {/* ── Prices & Size ── */}
       <div className={sectionClass}>
         <h3 className="text-sm font-medium text-gray-300">Prices & Size</h3>
         <div className="grid grid-cols-2 gap-4">

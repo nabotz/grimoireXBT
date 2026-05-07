@@ -21,7 +21,7 @@ export default function TradeLog() {
   const { filters, setFilter, resetFilters } = useTradeStore();
   const { data: trades = [], isLoading } = useTradesList(filters);
 
-  const hasFilters = filters.side !== 'all' || filters.status !== 'all' || filters.asset_type !== 'all' || filters.search;
+  const hasFilters = filters.status !== 'all' || filters.search;
 
   return (
     <div className="space-y-5">
@@ -50,18 +50,12 @@ export default function TradeLog() {
           <input
             value={filters.search}
             onChange={e => setFilter('search', e.target.value)}
-            placeholder="Search pair…"
+            placeholder="Search token…"
             className="w-full pl-8 pr-3 py-1.5 bg-gray-800 border border-gray-700 rounded-lg text-sm text-gray-100 placeholder-gray-600 focus:outline-none focus:ring-1 focus:ring-purple-500"
           />
         </div>
 
-        {/* Side filter */}
-        <select value={filters.side} onChange={e => setFilter('side', e.target.value as any)}
-          className="bg-gray-800 border border-gray-700 rounded-lg px-2 py-1.5 text-sm text-gray-300 focus:outline-none focus:ring-1 focus:ring-purple-500">
-          <option value="all">All sides</option>
-          <option value="long">Long</option>
-          <option value="short">Short</option>
-        </select>
+
 
         {/* Status filter */}
         <select value={filters.status} onChange={e => setFilter('status', e.target.value as any)}
@@ -96,8 +90,9 @@ export default function TradeLog() {
           <table className="w-full text-sm">
             <thead>
               <tr className="border-b border-gray-800 bg-gray-900/80">
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Pair</th>
-                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Side</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Token</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Network</th>
+                <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
                 <th className="text-left px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                 <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">PnL</th>
                 <th className="text-right px-4 py-3 text-xs font-medium text-gray-500 uppercase tracking-wider">R:R</th>
@@ -110,8 +105,9 @@ export default function TradeLog() {
                 <tr key={trade.id}
                   onClick={() => navigate(`/trades/${trade.id}`)}
                   className="cursor-pointer hover:bg-gray-800/50 transition-colors">
-                  <td className="px-4 py-3 font-medium text-gray-100 font-mono">{trade.pair}</td>
-                  <td className="px-4 py-3">{sideBadge(trade.side)}</td>
+                  <td className="px-4 py-3 font-medium text-gray-100 font-mono">{trade.token}</td>
+                  <td className="px-4 py-3 text-gray-300 capitalize">{trade.network || '—'}</td>
+                  <td className="px-4 py-3 text-gray-300 capitalize">{trade.category || '—'}</td>
                   <td className="px-4 py-3">{statusBadge(trade.status)}</td>
                   <td className={`px-4 py-3 text-right font-mono ${pnlColor(trade.pnl)}`}>{formatCurrency(trade.pnl)}</td>
                   <td className="px-4 py-3 text-right text-gray-400 font-mono">

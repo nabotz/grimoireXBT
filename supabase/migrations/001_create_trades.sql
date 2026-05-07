@@ -13,10 +13,10 @@ CREATE TABLE trades (
   user_id       UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
 
   -- Trade data
-  pair          TEXT NOT NULL,
-  side          TEXT NOT NULL CHECK (side IN ('long', 'short')),
+  token         TEXT NOT NULL,
   asset_type    TEXT NOT NULL DEFAULT 'spot' CHECK (asset_type IN ('spot')),
-  exchange      TEXT,
+  network       TEXT,
+  category      TEXT,
 
   -- Prices & sizing
   entry_price   NUMERIC NOT NULL,
@@ -50,7 +50,7 @@ CREATE TABLE trades (
 
 CREATE INDEX idx_trades_user_id   ON trades(user_id);
 CREATE INDEX idx_trades_entry_date ON trades(user_id, entry_date DESC);
-CREATE INDEX idx_trades_pair      ON trades(user_id, pair);
+CREATE INDEX idx_trades_token      ON trades(user_id, token);
 CREATE INDEX idx_trades_status    ON trades(user_id, status);
 
 CREATE TRIGGER trades_updated_at

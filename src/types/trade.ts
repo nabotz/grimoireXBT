@@ -1,4 +1,3 @@
-export type TradeSide = 'long' | 'short';
 export type TradeStatus = 'open' | 'closed' | 'cancelled';
 
 export interface Trade {
@@ -6,10 +5,9 @@ export interface Trade {
   user_id: string;
 
   // Trade data
-  pair: string;
-  side: TradeSide;
-  asset_type: AssetType;
-  exchange?: string;
+  token: string;
+  network?: string;
+  category?: string;
 
   // Prices & sizing
   entry_price: number;
@@ -42,10 +40,9 @@ export interface Trade {
 }
 
 export interface TradeInput {
-  pair: string;
-  side: TradeSide;
-  asset_type: AssetType;
-  exchange?: string;
+  token: string;
+  network?: string;
+  category?: string;
   entry_price: number;
   exit_price?: number;
   position_size: number;

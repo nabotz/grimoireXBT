@@ -32,10 +32,10 @@ export default function TradeEntry() {
 
     await createTrade.mutateAsync({
       trade: {
-        pair: data.pair,
-        side: data.side,
-        asset_type: data.asset_type,
-        exchange: data.exchange,
+        token: data.token,
+        network: data.network,
+        category: data.category,
+        asset_type: 'spot',
         entry_price: Number(data.entry_price),
         exit_price: data.exit_price ? Number(data.exit_price) : undefined,
         position_size: Number(data.position_size),
