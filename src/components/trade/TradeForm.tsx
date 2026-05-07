@@ -41,6 +41,10 @@ const sectionClass = 'space-y-4 p-4 bg-gray-900/50 rounded-xl border border-gray
 export default function TradeForm({ defaultValues, existingEmotions = [], onSubmit, submitLabel = 'Save Trade', loading }: TradeFormProps) {
   const [emotions, setEmotions] = useState<SelectedEmotion[]>(existingEmotions);
   const [xpPreview, setXpPreview] = useState<number>(0);
+  const [isOtherNetwork, setIsOtherNetwork] = useState(() => {
+    const v = defaultValues?.network;
+    return !!v && !['solana', 'ethereum', 'base', ''].includes(v.toLowerCase());
+  });
 
   const { register, handleSubmit, control, setValue, formState: { errors } } = useForm<TradeFormValues>({
     resolver: zodResolver(schema),
@@ -100,12 +104,19 @@ export default function TradeForm({ defaultValues, existingEmotions = [], onSubm
           <div>
             <label className={labelClass}>Network</label>
             <Controller control={control} name="network" render={({ field }) => {
-              const isOther = field.value && !['solana', 'ethereum', 'base', ''].includes(field.value.toLowerCase());
               return (
                 <div className="flex gap-2">
                   <select 
-                    value={isOther ? 'other' : field.value || ''} 
-                    onChange={e => field.onChange(e.target.value === 'other' ? '' : e.target.value)}
+                    value={isOtherNetwork ? 'other' : field.value || ''} 
+                    onChange={e => {
+                      if (e.target.value === 'other') {
+                        setIsOtherNetwork(true);
+                        field.onChange('');
+                      } else {
+                        setIsOtherNetwork(false);
+                        field.onChange(e.target.value);
+                      }
+                    }}
                     className={inputClass}
                   >
                     <option value="">Select network</option>
@@ -114,9 +125,9 @@ export default function TradeForm({ defaultValues, existingEmotions = [], onSubm
                     <option value="base">Base</option>
                     <option value="other">Other</option>
                   </select>
-                  {isOther && (
+                  {isOtherNetwork && (
                     <input 
-                      value={field.value} 
+                      value={field.value || ''} 
                       onChange={e => field.onChange(e.target.value)} 
                       placeholder="Custom network" 
                       className={inputClass} 
