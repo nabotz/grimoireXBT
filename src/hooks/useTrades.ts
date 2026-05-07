@@ -60,6 +60,19 @@ export function useEmotionTags(tradeId: string | undefined) {
   });
 }
 
+// ── Fetch ALL emotion tags for dashboard ─────────────────────────────────────
+
+export function useAllEmotions() {
+  return useQuery({
+    queryKey: ['emotions', 'all'],
+    queryFn: async () => {
+      const { data, error } = await supabase.from('emotion_tags').select('*');
+      if (error) throw error;
+      return (data ?? []) as EmotionTag[];
+    },
+  });
+}
+
 // ── Create trade ─────────────────────────────────────────────────────────────
 
 export function useCreateTrade() {
