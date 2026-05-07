@@ -1,6 +1,6 @@
 import { Outlet, NavLink, Navigate } from 'react-router-dom';
 import {
-  LayoutDashboard, ListOrdered, PlusCircle, BarChart3,
+  LayoutDashboard, ListOrdered, BarChart3,
   User, Binary, Trophy, BookOpen, Settings, ChevronLeft,
   ChevronRight, Swords, LogOut, ShieldX,
 } from 'lucide-react';
@@ -14,7 +14,6 @@ import type { PlayerProfile, PlayerStats } from '../../types/player';
 const NAV = [
   { to: '/',             label: 'Dashboard',    icon: LayoutDashboard, end: true },
   { to: '/trades',       label: 'Trade Log',    icon: ListOrdered },
-  { to: '/trades/new',   label: 'New Trade',    icon: PlusCircle },
   { to: '/analytics',    label: 'Analytics',    icon: BarChart3 },
   { to: '/profile',      label: 'Profile',      icon: User },
   { to: '/skills',       label: 'Skill Tree',   icon: Binary },

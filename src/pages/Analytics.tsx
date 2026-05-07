@@ -3,7 +3,7 @@ import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
   ReferenceLine, Area, AreaChart, BarChart, Bar, Cell, LabelList,
 } from 'recharts';
-import { BarChart3, TrendingUp, TrendingDown, Activity, Tag } from 'lucide-react';
+import { BarChart3, TrendingUp, TrendingDown, Activity, Tag, Globe } from 'lucide-react';
 import { useTradesList } from '../hooks/useTrades';
 import { formatCurrency, formatDate, pnlColor } from '../lib/formatters';
 
@@ -127,6 +127,57 @@ export default function Analytics() {
     return (
       <div className="bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 shadow-2xl min-w-[160px]">
         <p className="text-xs font-semibold text-gray-200 mb-2">{d.name}</p>
+        <div className="flex justify-between gap-4">
+          <span className="text-xs text-gray-500">PnL</span>
+          <span className={`text-sm font-mono font-bold ${d.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{formatCurrency(d.pnl)}</span>
+        </div>
+        <div className="flex justify-between gap-4 mt-1">
+          <span className="text-xs text-gray-500">Win Rate</span>
+          <span className="text-sm font-mono text-gray-300">{d.winRate}%</span>
+        </div>
+        <div className="flex justify-between gap-4 mt-1">
+          <span className="text-xs text-gray-500">Trades</span>
+          <span className="text-sm font-mono text-gray-300">{d.trades}</span>
+        </div>
+      </div>
+    );
+  }
+
+  // ── Phase 3c: Network breakdown ─────────────────────────────────────────
+  const NETWORK_COLORS: Record<string, string> = {
+    solana:   '#9945ff',
+    ethereum: '#627eea',
+    base:     '#0052ff',
+  };
+  const networkData = useMemo(() => {
+    const map = new Map<string, { totalPnl: number; wins: number; total: number }>();
+    for (const t of closedSorted) {
+      const net = t.network?.trim().toLowerCase() || 'other';
+      const label = net.charAt(0).toUpperCase() + net.slice(1);
+      const prev = map.get(label) ?? { totalPnl: 0, wins: 0, total: 0 };
+      map.set(label, {
+        totalPnl: prev.totalPnl + (t.pnl ?? 0),
+        wins: prev.wins + ((t.pnl ?? 0) > 0 ? 1 : 0),
+        total: prev.total + 1,
+      });
+    }
+    return Array.from(map.entries())
+      .map(([name, v]) => ({
+        name,
+        pnl: Math.round(v.totalPnl * 100) / 100,
+        winRate: Math.round((v.wins / v.total) * 100),
+        trades: v.total,
+        color: NETWORK_COLORS[name.toLowerCase()] ?? '#6b7280',
+      }))
+      .sort((a, b) => b.trades - a.trades);
+  }, [closedSorted]);
+
+  function NetworkTooltip({ active, payload }: any) {
+    if (!active || !payload?.length) return null;
+    const d = payload[0].payload;
+    return (
+      <div className="bg-gray-900 border border-gray-700 rounded-xl px-4 py-3 shadow-2xl min-w-[160px]">
+        <p className="text-xs font-semibold mb-2" style={{ color: d.color }}>{d.name}</p>
         <div className="flex justify-between gap-4">
           <span className="text-xs text-gray-500">PnL</span>
           <span className={`text-sm font-mono font-bold ${d.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{formatCurrency(d.pnl)}</span>
@@ -306,6 +357,78 @@ export default function Analytics() {
                   {categoryData.map((row, i) => (
                     <tr key={i} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
                       <td className="px-3 py-2.5 text-gray-300">{row.name}</td>
+                      <td className={`px-3 py-2.5 text-right font-mono font-semibold ${row.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
+                        {formatCurrency(row.pnl)}
+                      </td>
+                      <td className="px-3 py-2.5 text-right font-mono text-gray-400">{row.winRate}%</td>
+                      <td className="px-3 py-2.5 text-right font-mono text-gray-500">{row.trades}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Network Performance ── */}
+      <div className="bg-gray-900/60 border border-gray-800 rounded-xl p-5">
+        <div className="flex items-center gap-2 mb-1">
+          <Globe size={16} className="text-purple-400" />
+          <h2 className="text-sm font-medium text-gray-300">PnL by Network</h2>
+        </div>
+        <p className="text-xs text-gray-600 mb-5">Performance breakdown across chains</p>
+
+        {isLoading ? (
+          <div className="flex items-center justify-center h-48">
+            <div className="w-5 h-5 border-2 border-purple-500 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : networkData.length === 0 ? (
+          <div className="flex flex-col items-center justify-center h-48 text-gray-600">
+            <Globe size={28} className="mb-2 opacity-40" />
+            <p className="text-sm">No closed trades with network data yet</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Bar chart */}
+            <ResponsiveContainer width="100%" height={220}>
+              <BarChart data={networkData} margin={{ top: 8, right: 16, left: 8, bottom: 0 }} barSize={32}>
+                <CartesianGrid stroke="#1f2937" strokeDasharray="3 3" vertical={false} />
+                <XAxis dataKey="name" tick={{ fill: '#6b7280', fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis
+                  tickFormatter={v => `$${Math.abs(v) >= 1000 ? `${(v / 1000).toFixed(1)}k` : v}`}
+                  tick={{ fill: '#6b7280', fontSize: 10 }} axisLine={false} tickLine={false} width={52}
+                />
+                <Tooltip content={<NetworkTooltip />} />
+                <ReferenceLine y={0} stroke="#374151" strokeWidth={1} />
+                <Bar dataKey="pnl" radius={[4, 4, 0, 0]}>
+                  {networkData.map((entry, i) => (
+                    <Cell key={i} fill={entry.color} fillOpacity={0.85} />
+                  ))}
+                </Bar>
+              </BarChart>
+            </ResponsiveContainer>
+
+            {/* Table */}
+            <div className="overflow-hidden rounded-lg border border-gray-800">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-gray-900/60 border-b border-gray-800">
+                    <th className="text-left px-3 py-2 text-xs font-medium text-gray-500 uppercase">Network</th>
+                    <th className="text-right px-3 py-2 text-xs font-medium text-gray-500 uppercase">PnL</th>
+                    <th className="text-right px-3 py-2 text-xs font-medium text-gray-500 uppercase">Win%</th>
+                    <th className="text-right px-3 py-2 text-xs font-medium text-gray-500 uppercase">#</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {networkData.map((row, i) => (
+                    <tr key={i} className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
+                      <td className="px-3 py-2.5">
+                        <div className="flex items-center gap-2">
+                          <div className="w-2.5 h-2.5 rounded-full" style={{ background: row.color }} />
+                          <span className="text-gray-300">{row.name}</span>
+                        </div>
+                      </td>
                       <td className={`px-3 py-2.5 text-right font-mono font-semibold ${row.pnl >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>
                         {formatCurrency(row.pnl)}
                       </td>
